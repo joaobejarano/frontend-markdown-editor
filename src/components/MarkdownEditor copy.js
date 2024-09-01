@@ -1,19 +1,13 @@
+// src/components/MarkdownEditor.js
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import io from 'socket.io-client';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode'; // Importa jwt-decode
 import { useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Button, Box, TextField, List, ListItem, ListItemText, Divider, Typography, Stack } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Button, Box, Stack, TextField, List, ListItem, ListItemText, Divider, Typography } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 import LogoutIcon from '@mui/icons-material/Logout';
-import FormatBoldIcon from '@mui/icons-material/FormatBold';
-import FormatItalicIcon from '@mui/icons-material/FormatItalic';
-import FormatStrikethroughIcon from '@mui/icons-material/FormatStrikethrough';
-import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
-import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import LinkIcon from '@mui/icons-material/Link';
-import CodeIcon from '@mui/icons-material/Code';
 
 const socket = io('http://localhost:4000', {
   auth: {
@@ -25,7 +19,7 @@ const MarkdownEditor = () => {
   const [text, setText] = useState('');
   const [documentId, setDocumentId] = useState(null);
   const [users, setUsers] = useState([]);
-  const [editingUser, setEditingUser] = useState('');
+  const [editingUser, setEditingUser] = useState(''); // Para armazenar o usuário que está editando
   const [history, setHistory] = useState([]);
   const navigate = useNavigate();
 
@@ -51,23 +45,25 @@ const MarkdownEditor = () => {
           return;
         }
 
-        const decodedToken = jwtDecode(token);
-        const username = decodedToken.username || 'Desconhecido';
+        const decodedToken = jwtDecode(token);  // Decodifica o token JWT
+        const username = decodedToken.username || 'Desconhecido';  // Extrai o nome de usuário
 
         const response = await axios.get('http://localhost:4000/api/documents', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (response.data.length > 0) {
+          // Se houver documentos, pegue o primeiro
           const document = response.data[0];
           setText(document.content);
           setDocumentId(document.id);
           fetchHistory(document.id);
         } else {
+          // Se não houver documentos, crie um novo
           const newDocument = await axios.post('http://localhost:4000/api/documents', {
             content: '',
             version: 1,
-            createdBy: username,
+            createdBy: username,  // Usa o nome de usuário do token decodificado
           }, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -83,6 +79,7 @@ const MarkdownEditor = () => {
         }
       }
     };
+
 
     fetchDocument();
 
@@ -100,7 +97,7 @@ const MarkdownEditor = () => {
 
     socket.on('userEditing', (user) => {
       console.log('User editing:', user);
-      setEditingUser(user);
+      setEditingUser(user); // Atualiza o nome do usuário que está editando
     });
 
     return () => {
@@ -114,13 +111,14 @@ const MarkdownEditor = () => {
   const handleTextChange = (e) => {
     const newText = e.target.value;
     setText(newText);
-    socket.emit('textChange', newText);
+    socket.emit('textChange', newText);  // Envia apenas a string diretamente
 
     const token = localStorage.getItem('token');
     const decodedToken = jwtDecode(token);
     const username = decodedToken.username;
+    console.log(username)
 
-    socket.emit('userEditing', username);
+    socket.emit('userEditing', username); // Envia o nome do usuário que está editando
 
     if (documentId) {
       const token = localStorage.getItem('token');
@@ -143,7 +141,7 @@ const MarkdownEditor = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('Nova versão salva e iniciada');
-        fetchHistory(documentId);
+        fetchHistory(documentId);  // Atualiza o histórico de versões
       } catch (err) {
         console.error('Failed to save new version:', err);
       }
@@ -169,14 +167,9 @@ const MarkdownEditor = () => {
     navigate('/login');
   };
 
-  const insertTextAtCursor = (textToInsert) => {
-    const textarea = document.querySelector('textarea');
-    const cursorPosition = textarea.selectionStart;
-    const newText = `${text.slice(0, cursorPosition)}${textToInsert}${text.slice(cursorPosition)}`;
-    setText(newText);
-    socket.emit('textChange', newText);
-  };
+  console.log(users);
 
+  
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Menu Lateral */}
@@ -220,14 +213,9 @@ const MarkdownEditor = () => {
         {/* Menu Superior */}
         <AppBar position="static" color="default" sx={{ mb: 2 }}>
           <Toolbar>
-            <IconButton onClick={() => insertTextAtCursor('**')}><FormatBoldIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('*')}><FormatItalicIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('~~')}><FormatStrikethroughIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('> ')}><FormatQuoteIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('- ')}><FormatListBulletedIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('1. ')}><FormatListNumberedIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('[] ')}><CodeIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('[] ')}><LinkIcon /></IconButton>
+            <IconButton color="inherit">
+              <SaveIcon />
+            </IconButton>
             <Button onClick={handleSaveVersion} variant="outlined" color="primary" sx={{ ml: 2 }}>
               Salvar Versão Atual e Iniciar Nova
             </Button>
@@ -235,24 +223,30 @@ const MarkdownEditor = () => {
         </AppBar>
 
         {/* Editor e Preview */}
-        <Stack direction="row" spacing={2} sx={{ flexGrow: 1, px: 2 }}>
-          <TextField
-            multiline
-            fullWidth
-            minRows={20}
-            value={text}
-            onChange={handleTextChange}
-            variant="outlined"
-            sx={{ flex: 1 }}
-            placeholder="Type here..."
-          />
-          <Box sx={{ flex: 1, overflowY: 'auto', p: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
-            <ReactMarkdown>{text}</ReactMarkdown>
+        <Stack direction="row" spacing={1} sx={{ flexGrow: 1, height: '100%' }}>
+          <Box sx={{ width: '50%', height: '100%' }}>
+            <TextField
+              value={text}
+              onChange={handleTextChange}
+              multiline
+              fullWidth
+              variant="outlined"
+              minRows={30}
+              placeholder="Digite seu markdown aqui..."
+              sx={{ height: '100%' }}
+              InputProps={{
+                style: { fontFamily: 'monospace', fontSize: '16px', height: '100%' },
+              }}
+            />
+          </Box>
+          <Box sx={{ width: '50%', height: '100%' }}>
+            <Box sx={{ border: '1px solid #ccc', borderRadius: '4px', padding: '16px', height: '96%' }}>
+              <ReactMarkdown>{text}</ReactMarkdown>
+            </Box>
           </Box>
         </Stack>
       </Box>
     </Box>
   );
 };
-
 export default MarkdownEditor;
