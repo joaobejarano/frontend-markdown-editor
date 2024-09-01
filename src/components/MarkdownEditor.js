@@ -16,13 +16,27 @@ const MarkdownEditor = () => {
   const [text, setText] = useState('');
   const [documentId, setDocumentId] = useState(null);
   const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(''); // Para armazenar o usuário que está editando
   const [history, setHistory] = useState([]);
   const navigate = useNavigate();
+
+  const fetchHistory = async (docId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`http://localhost:4000/api/documents/${docId}/history`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setHistory(response.data);
+    } catch (err) {
+      console.error('Failed to fetch document history:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchDocument = async () => {
       try {
         const token = localStorage.getItem('token');
+        
         if (!token) {
           navigate('/login');
           return;
@@ -63,17 +77,6 @@ const MarkdownEditor = () => {
       }
     };
 
-    const fetchHistory = async (docId) => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`http://localhost:4000/api/documents/${docId}/history`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setHistory(response.data);
-      } catch (err) {
-        console.error('Failed to fetch document history:', err);
-      }
-    };
 
     fetchDocument();
 
@@ -89,17 +92,30 @@ const MarkdownEditor = () => {
       setUsers(Object.values(connectedUsers));
     });
 
+    socket.on('userEditing', (user) => {
+      console.log('User editing:', user);
+      setEditingUser(user); // Atualiza o nome do usuário que está editando
+    });
+
     return () => {
       socket.off('updateText');
       socket.off('userConnected');
       socket.off('userDisconnected');
+      socket.off('userEditing');
     };
   }, [navigate]);
 
   const handleTextChange = (e) => {
     const newText = e.target.value;
     setText(newText);
-    socket.emit('textChange', { text: newText });
+    socket.emit('textChange', newText);  // Envia apenas a string diretamente
+
+    const token = localStorage.getItem('token');
+    const decodedToken = jwtDecode(token);
+    const username = decodedToken.username;
+    console.log(username)
+
+    socket.emit('userEditing', username); // Envia o nome do usuário que está editando
 
     if (documentId) {
       const token = localStorage.getItem('token');
@@ -109,6 +125,23 @@ const MarkdownEditor = () => {
       }, {
         headers: { Authorization: `Bearer ${token}` },
       }).catch(err => console.error('Failed to save document:', err));
+    } else {
+      console.error('Document ID is null');
+    }
+  };
+
+  const handleSaveVersion = async () => {
+    if (documentId) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post(`http://localhost:4000/api/documents/${documentId}/saveVersion`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('Nova versão salva e iniciada');
+        fetchHistory(documentId);  // Atualiza o histórico de versões
+      } catch (err) {
+        console.error('Failed to save new version:', err);
+      }
     } else {
       console.error('Document ID is null');
     }
@@ -131,9 +164,16 @@ const MarkdownEditor = () => {
     navigate('/login');
   };
 
+  // console.log(users);
+  console.log("Editando", editingUser);
+
   return (
     <div>
       <button onClick={handleLogout}>Logout</button>
+      <button onClick={handleSaveVersion}>Salvar Versão Atual e Iniciar Nova</button>
+      <div style={{ marginBottom: '100px' }}>
+        {editingUser && <strong>{editingUser} está editando...</strong>}
+      </div>
       <textarea
         value={text}
         onChange={handleTextChange}
@@ -146,6 +186,7 @@ const MarkdownEditor = () => {
         <h4>Usuários conectados:</h4>
         <ul>
           {users.map((user, index) => (
+            
             <li key={index}>{user.username}</li>
           ))}
         </ul>

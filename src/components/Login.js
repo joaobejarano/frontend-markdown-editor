@@ -20,6 +20,10 @@ const Login = () => {
     }
   };
 
+  const goToRegister = () => {
+    navigate('/register'); // Redireciona para a tela de registro
+  };
+
   return (
     <div>
       <h2>Login</h2>
@@ -40,6 +44,7 @@ const Login = () => {
         />
         <button type="submit">Login</button>
       </form>
+      <button onClick={goToRegister}>Registrar-se</button> {/* Botão para ir para a tela de registro */}
       {error && <p>{error}</p>}
     </div>
   );
