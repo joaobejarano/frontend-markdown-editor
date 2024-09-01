@@ -1,10 +1,10 @@
 import React from 'react';
-import MarkdownEditor from './MarkdownEditor';
+import Routes from './Routes';
 
 function App() {
   return (
     <div className="App">
-      <MarkdownEditor />
+      <Routes />
     </div>
   );
 }
