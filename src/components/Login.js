@@ -13,6 +13,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      console.log('email', email);
       const response = await axios.post('http://localhost:4000/api/auth/login', { email, password });
       localStorage.setItem('token', response.data.token);
       navigate('/editor');

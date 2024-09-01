@@ -14,6 +14,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LinkIcon from '@mui/icons-material/Link';
 import CodeIcon from '@mui/icons-material/Code';
+import rehypeSanitize from 'rehype-sanitize'; // Importa o rehype-sanitize
 
 const socket = io('http://localhost:4000', {
   auth: {
@@ -247,7 +248,7 @@ const MarkdownEditor = () => {
             placeholder="Type here..."
           />
           <Box sx={{ flex: 1, overflowY: 'auto', p: 2, border: '1px solid #ccc', borderRadius: '4px' }}>
-            <ReactMarkdown>{text}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{text}</ReactMarkdown>
           </Box>
         </Stack>
       </Box>
