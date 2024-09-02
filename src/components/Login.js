@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Link, Container, Avatar, CssBaseline, Stack, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-const baseUrl = 'http://localhost:4000';
+const baseUrl = 'https://markdown-editor-2itj.onrender.com';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -19,6 +19,7 @@ const Login = () => {
       return;
     }
     try {
+      console.log(email)
       const response = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       navigate('/editor');

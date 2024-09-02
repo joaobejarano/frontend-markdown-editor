@@ -16,7 +16,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import CodeIcon from '@mui/icons-material/Code';
 import rehypeSanitize from 'rehype-sanitize';
 
-const baseUrl = 'http://localhost:4000';
+const baseUrl = 'https://markdown-editor-2itj.onrender.com';
 
 const socket = io(`${baseUrl}`, {
   auth: {

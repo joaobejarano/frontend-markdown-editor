@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Link, Container, Avatar, CssBaseline, Grid } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
-const baseUrl = 'http://localhost:4000';
+const baseUrl = 'https://markdown-editor-2itj.onrender.com';
 
 const Register = () => {
   const [username, setUsername] = useState('');
