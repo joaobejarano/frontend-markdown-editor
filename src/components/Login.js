@@ -1,24 +1,30 @@
-// src/components/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, Link, Container, Avatar, CssBaseline, Grid } from '@mui/material';
+import { Box, Button, TextField, Typography, Link, Container, Avatar, CssBaseline, Stack, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+
+const baseUrl = 'http://localhost:4000';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!email) {
+      setErrorMessage('Email inválido');
+      return;
+    }
     try {
-      console.log('email', email);
-      const response = await axios.post('http://localhost:4000/api/auth/login', { email, password });
+      const response = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       navigate('/editor');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
+      setErrorMessage('Erro ao fazer login. Verifique suas credenciais e tente novamente.');
     }
   };
 
@@ -47,6 +53,7 @@ const Login = () => {
           Login
         </Typography>
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
+          {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
           <TextField
             margin="normal"
             required
@@ -71,18 +78,6 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          {/* <Grid container sx={{ mt: 2, mb: 2 }}>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
-            <Grid item>
-              <Link href="#" variant="body2">
-                Remember me
-              </Link>
-            </Grid>
-          </Grid> */}
           <Button
             type="submit"
             fullWidth
@@ -91,13 +86,11 @@ const Login = () => {
           >
             Sign in
           </Button>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <Link onClick={goToRegister} variant="body2" sx={{ cursor: 'pointer' }}>
-                {"Don't have an account? Register"}
-              </Link>
-            </Grid>
-          </Grid>
+          <Stack direction="row" justifyContent="center">
+            <Link onClick={goToRegister} variant="body2" sx={{ cursor: 'pointer' }}>
+              {"Don't have an account? Register"}
+            </Link>
+          </Stack>
         </Box>
       </Box>
     </Container>

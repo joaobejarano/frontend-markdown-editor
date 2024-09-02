@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Link, Container, Avatar, CssBaseline, Grid } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
+const baseUrl = 'http://localhost:4000';
+
 const Register = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -15,7 +17,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/auth/register', {
+      const response = await axios.post(`${baseUrl}/api/auth/register`, {
         username,
         email,
         password,

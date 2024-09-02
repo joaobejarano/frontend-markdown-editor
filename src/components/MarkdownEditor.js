@@ -14,9 +14,11 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LinkIcon from '@mui/icons-material/Link';
 import CodeIcon from '@mui/icons-material/Code';
-import rehypeSanitize from 'rehype-sanitize'; // Importa o rehype-sanitize
+import rehypeSanitize from 'rehype-sanitize';
 
-const socket = io('http://localhost:4000', {
+const baseUrl = 'http://localhost:4000';
+
+const socket = io(`${baseUrl}`, {
   auth: {
     token: localStorage.getItem('token'),
   },
@@ -33,7 +35,7 @@ const MarkdownEditor = () => {
   const fetchHistory = async (docId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:4000/api/documents/${docId}/history`, {
+      const response = await axios.get(`${baseUrl}/api/documents/${docId}/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHistory(response.data);
@@ -46,7 +48,7 @@ const MarkdownEditor = () => {
     const fetchDocument = async () => {
       try {
         const token = localStorage.getItem('token');
-        
+
         if (!token) {
           navigate('/login');
           return;
@@ -55,7 +57,7 @@ const MarkdownEditor = () => {
         const decodedToken = jwtDecode(token);
         const username = decodedToken.username || 'Desconhecido';
 
-        const response = await axios.get('http://localhost:4000/api/documents', {
+        const response = await axios.get(`${baseUrl}/api/documents`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -65,7 +67,7 @@ const MarkdownEditor = () => {
           setDocumentId(document.id);
           fetchHistory(document.id);
         } else {
-          const newDocument = await axios.post('http://localhost:4000/api/documents', {
+          const newDocument = await axios.post(`${baseUrl}/api/documents`, {
             content: '',
             version: 1,
             createdBy: username,
@@ -115,17 +117,10 @@ const MarkdownEditor = () => {
   const handleTextChange = (e) => {
     const newText = e.target.value;
     setText(newText);
-    socket.emit('textChange', newText);
-
-    const token = localStorage.getItem('token');
-    const decodedToken = jwtDecode(token);
-    const username = decodedToken.username;
-
-    socket.emit('userEditing', username);
 
     if (documentId) {
       const token = localStorage.getItem('token');
-      axios.put(`http://localhost:4000/api/documents/${documentId}`, {
+      axios.put(`${baseUrl}/api/documents/${documentId}`, {
         content: newText,
         version: history.length + 1,
       }, {
@@ -134,13 +129,19 @@ const MarkdownEditor = () => {
     } else {
       console.error('Document ID is null');
     }
+
+    socket.emit('textChange', newText);
+
+    const decodedToken = jwtDecode(localStorage.getItem('token'));
+    const username = decodedToken.username;
+    socket.emit('userEditing', username);
   };
 
   const handleSaveVersion = async () => {
     if (documentId) {
       try {
         const token = localStorage.getItem('token');
-        await axios.post(`http://localhost:4000/api/documents/${documentId}/saveVersion`, {}, {
+        await axios.post(`${baseUrl}/api/documents/${documentId}/saveVersion`, {}, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('Nova versão salva e iniciada');
@@ -156,7 +157,7 @@ const MarkdownEditor = () => {
   const restoreVersion = async (versionId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:4000/api/documents/${versionId}`, {
+      const response = await axios.get(`${baseUrl}/api/documents/${versionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setText(response.data.content);
@@ -227,8 +228,8 @@ const MarkdownEditor = () => {
             <IconButton onClick={() => insertTextAtCursor('> ')}><FormatQuoteIcon /></IconButton>
             <IconButton onClick={() => insertTextAtCursor('- ')}><FormatListBulletedIcon /></IconButton>
             <IconButton onClick={() => insertTextAtCursor('1. ')}><FormatListNumberedIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('[] ')}><CodeIcon /></IconButton>
-            <IconButton onClick={() => insertTextAtCursor('[] ')}><LinkIcon /></IconButton>
+            <IconButton onClick={() => insertTextAtCursor('``')}><CodeIcon /></IconButton>
+            <IconButton onClick={() => insertTextAtCursor('[]()')}><LinkIcon /></IconButton>
             <Button onClick={handleSaveVersion} variant="outlined" color="primary" sx={{ ml: 2 }}>
               Salvar Versão Atual e Iniciar Nova
             </Button>
