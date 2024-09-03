@@ -83,7 +83,7 @@ This project is a collaborative real-time Markdown editor that allows multiple u
 
 ### Authentication
 
-    - POST /api/auth/register
+- POST /api/auth/register
 
     - Description: Registers a new user.
     - Payload:
@@ -93,7 +93,7 @@ This project is a collaborative real-time Markdown editor that allows multiple u
         "email": "string",
         "password": "string"
         }
-    - POST /api/auth/login
+- POST /api/auth/login
 
     - Description: Logs in a user and returns a JWT token.
     - Payload:
@@ -110,7 +110,8 @@ This project is a collaborative real-time Markdown editor that allows multiple u
     - Description: Returns a list of documents for the authenticated user.
 - POST /api/documents
 
-    - Description: Creates a new document. - Payload:
+    - Description: Creates a new document.
+    - Payload:
         ```json
         {
         "content": "string",
@@ -125,12 +126,12 @@ This project is a collaborative real-time Markdown editor that allows multiple u
 
     - Description: Updates the content of a document.
 
-- Payload:
-    ```json
-    {
-    "content": "string",
-    "version": 2
-    }
+    - Payload:
+        ```json
+        {
+        "content": "string",
+        "version": 2
+        }
 - POST /api/documents/saveVersion
 
     - Description: Saves a new version of the document.
