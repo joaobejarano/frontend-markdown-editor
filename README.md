@@ -1,70 +1,192 @@
-# Getting Started with Create React App
+# Markdown Editor - Documentation
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Table of Contents
+- [Overview](#overview)
+- [Setup Instructions](#setup-instructions)
+- [Backend Configuration](#backend-configuration)
+- [Frontend Configuration](#frontend-configuration)
+- [API Endpoints](#api-endpoints)
+- [Design Decisions and Challenges Faced](#design-decisions-and-challenges-faced)
+- [Instructions on How to Test the Application](#instructions-on-how-to-test-the-application)
 
-## Available Scripts
+## Overview
+This project is a collaborative real-time Markdown editor that allows multiple users to edit the same document simultaneously. The system consists of a backend that provides the API and manages data persistence, and a frontend that provides the interface for users to interact with the editor.
 
-In the project directory, you can run:
+## Setup Instructions
 
-### `npm start`
+### Backend Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. **Clone the Repository:**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+    ```bash
+    git clone https://github.com/joaobejarano/backend-markdown-editor.git
+    cd backend-markdown-editor
 
-### `npm test`
+2. Install the Dependencies:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+    ```bash
+    npm install
 
-### `npm run build`
+3. Database Setup:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    - Rename the `.env.example` file to `.env` and set the environment variables.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+    - In the production environment, set the `JWT_SECRET` directly on your hosting service.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    - Change the `DB_HOST` to the address of your production database.
 
-### `npm run eject`
+4. Run the Migrations:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+    ```bash
+    npx sequelize-cli db:migrate --env development
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+5. Start the Server:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- Development Environment:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+    ```bash
+    npm run dev
 
-## Learn More
+- Production Environment:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    ```bash
+    npm start
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Frontend Configuration
 
-### Code Splitting
+1. **Clone the Repository:**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+    ```bash
+    git clone https://github.com/joaobejarano/frontend-markdown-editor.git
+    cd frontend-markdown-editor
 
-### Analyzing the Bundle Size
+2. Install the Dependencies:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+    ```bash
+    npm install
 
-### Making a Progressive Web App
+3. Environment Configuration:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+    - Rename the .env.example file to .env and configure the backend URL.
 
-### Advanced Configuration
+4. Run the Application:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+    ```bash
+    npm start
 
-### Deployment
+5. Build for Production:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+    ```bash
+    npm run build
 
-### `npm run build` fails to minify
+## API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Authentication
+
+    - POST /api/auth/register
+
+    - Description: Registers a new user.
+    - Payload:
+        ```json
+        {
+        "username": "string",
+        "email": "string",
+        "password": "string"
+        }
+    - POST /api/auth/login
+
+    - Description: Logs in a user and returns a JWT token.
+    - Payload:
+        ```json
+        {
+        "email": "string",
+        "password": "string"
+        }
+
+### Documents
+
+- GET /api/documents
+
+    - Description: Returns a list of documents for the authenticated user.
+- POST /api/documents
+
+    - Description: Creates a new document. - Payload:
+        ```json
+        {
+        "content": "string",
+        "version": 1,
+        "createdBy": "username"
+        }
+- GET /api/documents/
+
+    - Description: Returns the content of a specific document.
+
+- PUT /api/documents/
+
+    - Description: Updates the content of a document.
+
+- Payload:
+    ```json
+    {
+    "content": "string",
+    "version": 2
+    }
+- POST /api/documents/saveVersion
+
+    - Description: Saves a new version of the document.
+
+## Design Decisions and Challenges Faced
+
+### Design Decisions
+
+1. MVC Architecture:
+
+    - The backend application was designed following the MVC pattern to separate the application logic, the user interface and the data control. This makes the code easier to maintain and scalable.
+
+2. Socket.IO for Real-Time Collaboration:
+
+    - Socket.IO was chosen to manage real-time collaboration in the Markdown editor, allowing multiple users to edit a document simultaneously.
+
+3. JWT for Authentication:
+
+    - User authentication was implemented using JSON Web Tokens (JWT), which ensures that only authenticated users can access and modify documents.
+
+### Challenges Faced
+
+1. Edit Synchronization:
+
+    - One of the main challenges was to ensure that edits made by different users were correctly synchronized in real time, minimizing conflicts and ensuring that the document content was updated correctly.
+
+2. Persistence and Versioning:
+
+    - Implementing document versioning was another challenge, ensuring that users could save and restore previous versions of a document.
+
+3. Security:
+
+    - Ensuring the security of communications and protecting sensitive operations, such as authentication and token storage, was a priority, especially in production.
+
+## Instructions on How to Test the Application
+
+### Backend
+
+1. Unit Tests with Jest:
+
+    - The backend includes unit tests using Jest. To run the tests:
+        ```bash
+        npm test
+
+2. Integration Tests with Supertest:
+
+- The integration tests for the API routes use Supertest to ensure that the endpoints are working correctly.
+
+### Frontend
+
+1. Component Tests with Cypress:
+
+- The frontend uses Cypress to integration and end-to-end tests. To run the tests:
+    ```bash
+    npx cypress open
+
+2. Automated Tests:
+
+    - Automated tests have been set up to ensure that critical functionality, such as document editing and authentication, is working as expected.
